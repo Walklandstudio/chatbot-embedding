@@ -43,6 +43,8 @@ app.post("/chat", async (req, res) => {
       match_threshold: 0.6,
       match_count: 3
     });
+    
+    console.log("🔍 Match results from Supabase:", matches);
 
     if (error) {
       console.error("❌ Supabase error:", error);
