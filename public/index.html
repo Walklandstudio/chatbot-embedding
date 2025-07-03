@@ -3,167 +3,209 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Coach Scout – Canine Personality Chatbot</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <title>Coach Scout</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet">
   <style>
     body {
-      margin: 0;
       font-family: 'Inter', sans-serif;
-      background: #f0f4f8;
+      background: #f6f8fa;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      height: 100vh;
-    }
-
-    .chat-box {
-      background: white;
-      width: 100%;
-      max-width: 600px;
-      height: 80vh;
-      display: flex;
-      flex-direction: column;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-      border-radius: 12px;
-      overflow: hidden;
+      padding: 2rem;
     }
 
     .chat-container {
-      flex: 1;
-      padding: 20px;
-      overflow-y: auto;
+      width: 100%;
+      max-width: 700px;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+      padding: 1.5rem;
       display: flex;
       flex-direction: column;
+      overflow-y: auto;
+    }
+
+    .chat-bubble {
+      display: flex;
+      align-items: flex-start;
+      margin-bottom: 1.2rem;
+    }
+
+    .chat-bubble img {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      margin-right: 10px;
     }
 
     .message {
-      margin-bottom: 15px;
-      padding: 12px 16px;
+      padding: 10px 14px;
       border-radius: 12px;
       max-width: 75%;
-      line-height: 1.5;
+      position: relative;
+      background: #f1f3f5;
     }
 
-    .user {
+    .chat-bubble.user .message {
+      background: #d1e7dd;
       align-self: flex-end;
-      background-color: #d1e7dd;
     }
 
-    .bot {
-      align-self: flex-start;
-      background-color: #fff;
-      border: 1px solid #ccc;
+    .typing {
+      font-style: italic;
+      opacity: 0.7;
+      animation: blink 1s infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 0.3; }
+      50% { opacity: 1; }
+    }
+
+    .timestamp {
+      font-size: 0.75rem;
+      color: #888;
+      margin-top: 2px;
     }
 
     .input-area {
       display: flex;
-      padding: 12px;
-      border-top: 1px solid #ddd;
-      background: #fafafa;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 1rem;
     }
 
-    .input-area select,
-    .input-area input,
-    .input-area button {
-      font-family: 'Inter', sans-serif;
-      font-size: 14px;
-    }
-
-    #profileSelect {
-      margin-right: 10px;
-      padding: 8px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-    }
-
-    .input-area input {
-      flex: 1;
+    select, input {
       padding: 10px;
+      font-size: 1rem;
+      flex: 1 1 100%;
       border: 1px solid #ccc;
-      border-radius: 8px;
+      border-radius: 10px;
     }
 
-    .input-area button {
-      margin-left: 10px;
-      padding: 10px 20px;
-      background-color: #007bff;
-      color: white;
+    button {
+      padding: 10px 16px;
+      font-size: 1rem;
       border: none;
-      border-radius: 8px;
+      background: #0077ff;
+      color: white;
+      border-radius: 10px;
       cursor: pointer;
-      transition: background 0.2s;
+      flex: 1 1 100%;
     }
 
-    .input-area button:hover {
-      background-color: #0056b3;
+    button:hover {
+      background: #005ec2;
+    }
+
+    @media (min-width: 600px) {
+      .input-area {
+        flex-wrap: nowrap;
+      }
+      select, input {
+        flex: 1;
+      }
+      button {
+        flex: unset;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="chat-box">
-    <div class="chat-container" id="chat"></div>
-    <div class="input-area">
-      <select id="profileSelect">
-        <option value="General">General</option>
-        <option value="The Guardian">The Guardian</option>
-        <option value="The Investigator">The Investigator</option>
-        <option value="The Socialiser">The Socialiser</option>
-        <option value="The Peacekeeper">The Peacekeeper</option>
-        <option value="The Performer">The Performer</option>
-        <option value="The Achiever">The Achiever</option>
-        <option value="The Connector">The Connector</option>
-        <option value="The Provider">The Provider</option>
-      </select>
-      <input type="text" id="userInput" placeholder="Ask Coach Scout a question..." />
-      <button onclick="sendMessage()">Send</button>
+  <div class="chat-container" id="chatContainer">
+    <div class="chat-bubble bot">
+      <img src="https://xoxnamhylybjzejsuwkr.supabase.co/storage/v1/object/public/coachscout//coachscout.jpg" alt="Coach Scout" />
+      <div>
+        <div class="message">
+          Hello, I’m <strong>Coach Scout</strong> and I’m here to help you understand your Canine personality better. 🐾<br />
+          Let’s get started! Do you have any questions for me?
+        </div>
+        <div class="timestamp" id="start-time"></div>
+      </div>
     </div>
   </div>
 
-  <script>
-    const chat = document.getElementById("chat");
-    const input = document.getElementById("userInput");
+  <div class="input-area">
+    <select id="profileSelect">
+      <option value="General">📋 General</option>
+      <option value="The Guardian">🛡️ The Guardian</option>
+      <option value="The Investigator">🕵️ The Investigator</option>
+      <option value="The Socialiser">🎉 The Socialiser</option>
+      <option value="The Peacekeeper">🕊️ The Peacekeeper</option>
+      <option value="The Performer">🎭 The Performer</option>
+      <option value="The Achiever">🏆 The Achiever</option>
+      <option value="The Connector">🔗 The Connector</option>
+      <option value="The Provider">🎁 The Provider</option>
+    </select>
+    <input type="text" id="userInput" placeholder="Ask me anything about the test..." />
+    <button onclick="sendMessage()">Send</button>
+  </div>
 
-    function addMessage(content, sender) {
-      const msg = document.createElement("div");
-      msg.classList.add("message", sender);
-      msg.textContent = content;
-      chat.appendChild(msg);
-      chat.scrollTop = chat.scrollHeight;
-    }
+  <script>
+    const chatContainer = document.getElementById("chatContainer");
+    const userInput = document.getElementById("userInput");
+
+    document.getElementById("start-time").innerText = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
 
     async function sendMessage() {
-      const text = input.value.trim();
+      const input = userInput.value.trim();
       const profile = document.getElementById("profileSelect").value;
-      if (!text) return;
+      if (!input) return;
 
-      addMessage(text, "user");
-      input.value = "";
+      appendMessage("user", input);
+      userInput.value = "";
+
+      const typingBubble = appendMessage("bot", "Coach Scout is typing...", true);
 
       const response = await fetch("/chat", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question: text, profile_name: profile })
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ question: input, profile_name: profile })
       });
 
       const data = await response.json();
-      addMessage(data.answer || "Sorry, Coach Scout couldn’t find an answer.", "bot");
+      typingBubble.remove();
+
+      const matched = data.match || "(Couldn't retrieve matched question)";
+      appendMessage("bot", `Q: ${matched}\nA: ${data.answer || "Sorry, I’m not sure about that."}`);
     }
 
-    // Enter key triggers "Send"
-    input.addEventListener("keypress", function (e) {
-      if (e.key === "Enter") {
-        sendMessage();
-      }
-    });
+    function appendMessage(sender, text, isTyping = false) {
+      const bubble = document.createElement("div");
+      bubble.className = `chat-bubble ${sender}`;
 
-    // Bot welcome messages on page load
-    window.addEventListener("DOMContentLoaded", () => {
-      addMessage("Hello, I’m Coach Scout and I’m here to help you understand your Canine personality better.", "bot");
-      setTimeout(() => addMessage("Let’s get started.", "bot"), 1000);
-      setTimeout(() => addMessage("Do you have any questions for me?", "bot"), 2000);
+      const avatar = document.createElement("img");
+      avatar.src = sender === "bot"
+        ? "https://xoxnamhylybjzejsuwkr.supabase.co/storage/v1/object/public/coachscout//coachscout.jpg"
+        : "https://api.dicebear.com/7.x/thumbs/svg?seed=User";
+
+      const message = document.createElement("div");
+      message.className = "message";
+      message.textContent = text;
+      if (isTyping) message.classList.add("typing");
+
+      const timestamp = document.createElement("div");
+      timestamp.className = "timestamp";
+      timestamp.textContent = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+      const msgBox = document.createElement("div");
+      msgBox.appendChild(message);
+      msgBox.appendChild(timestamp);
+
+      bubble.appendChild(avatar);
+      bubble.appendChild(msgBox);
+
+      chatContainer.appendChild(bubble);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+
+      return bubble;
+    }
+
+    userInput.addEventListener("keydown", function(e) {
+      if (e.key === "Enter") sendMessage();
     });
   </script>
 </body>
 </html>
-
