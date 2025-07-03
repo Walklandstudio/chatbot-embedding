@@ -45,12 +45,14 @@
       border-radius: 12px;
       max-width: 75%;
       position: relative;
-      background: #f1f3f5;
     }
 
     .chat-bubble.user .message {
       background: #d1e7dd;
-      align-self: flex-end;
+    }
+
+    .chat-bubble.bot .message {
+      background: #f1f3f5;
     }
 
     .typing {
@@ -116,7 +118,7 @@
 <body>
   <div class="chat-container" id="chatContainer">
     <div class="chat-bubble bot">
-      <img src="https://xoxnamhylybjzejsuwkr.supabase.co/storage/v1/object/public/coachscout//coachscout.jpg" alt="Coach Scout" />
+      <img src="https://xoxnamhylybjzejsuwkr.supabase.co/storage/v1/object/public/coachscout//coachscout.png" alt="Coach Scout" />
       <div>
         <div class="message">
           Hello, I’m <strong>Coach Scout</strong> and I’m here to help you understand your Canine personality better. 🐾<br />
@@ -129,7 +131,7 @@
 
   <div class="input-area">
     <select id="profileSelect">
-        <option value="General">🐾 General</option>
+       <option value="General">🐾 General</option>
         <option value="Border Collie">🐕 Border Collie</option>
         <option value="Poodle">🎭 Poodle</option>
         <option value="Golden Retriever">💛 Golden Retriever</option>
@@ -147,6 +149,18 @@
     const chatContainer = document.getElementById("chatContainer");
     const userInput = document.getElementById("userInput");
 
+    const profileAvatars = {
+      "The Guardian": "https://xoxnamhylybjzejsuwkr.supabase.co/storage/v1/object/public/coachscout//germanshepard.png",
+      "The Investigator": "https://xoxnamhylybjzejsuwkr.supabase.co/storage/v1/object/public/coachscout//jackrussel.png",
+      "The Socialiser": "https://xoxnamhylybjzejsuwkr.supabase.co/storage/v1/object/public/coachscout//poodle.png",
+      "The Peacekeeper": "https://xoxnamhylybjzejsuwkr.supabase.co/storage/v1/object/public/coachscout//goldenretriever.png",
+      "The Performer": "https://xoxnamhylybjzejsuwkr.supabase.co/storage/v1/object/public/coachscout//labrador.png",
+      "The Achiever": "https://xoxnamhylybjzejsuwkr.supabase.co/storage/v1/object/public/coachscout//bordercollie.png",
+      "The Connector": "https://xoxnamhylybjzejsuwkr.supabase.co/storage/v1/object/public/coachscout//bassethound.png",
+      "The Provider": "https://xoxnamhylybjzejsuwkr.supabase.co/storage/v1/object/public/coachscout//bulldog.png",
+      "General": "https://api.dicebear.com/7.x/thumbs/svg?seed=User"
+    };
+
     document.getElementById("start-time").innerText = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
 
     async function sendMessage() {
@@ -154,7 +168,7 @@
       const profile = document.getElementById("profileSelect").value;
       if (!input) return;
 
-      appendMessage("user", input);
+      appendMessage("user", input, false, profileAvatars[profile]);
       userInput.value = "";
 
       const typingBubble = appendMessage("bot", "Coach Scout is typing...", true);
@@ -169,17 +183,26 @@
       typingBubble.remove();
 
       const matched = data.match || "(Couldn't retrieve matched question)";
-      appendMessage("bot", `Q: ${matched}\nA: ${data.answer || "Sorry, I’m not sure about that."}`);
+      const finalText = `Q: ${matched}\nA: ${data.answer || "Sorry, I’m not sure about that."}`;
+
+      appendMessage("bot", finalText);
+
+      // 🗣️ Text-to-Speech
+      if ('speechSynthesis' in window) {
+        const utterance = new SpeechSynthesisUtterance(data.answer);
+        utterance.lang = 'en-US';
+        speechSynthesis.speak(utterance);
+      }
     }
 
-    function appendMessage(sender, text, isTyping = false) {
+    function appendMessage(sender, text, isTyping = false, avatarOverride = null) {
       const bubble = document.createElement("div");
       bubble.className = `chat-bubble ${sender}`;
 
       const avatar = document.createElement("img");
-      avatar.src = sender === "bot"
-        ? "https://xoxnamhylybjzejsuwkr.supabase.co/storage/v1/object/public/coachscout//coachscout.jpg"
-        : "https://api.dicebear.com/7.x/thumbs/svg?seed=User";
+      avatar.src = avatarOverride || (sender === "bot"
+        ? "https://xoxnamhylybjzejsuwkr.supabase.co/storage/v1/object/public/coachscout//coachscout.png"
+        : "https://api.dicebear.com/7.x/thumbs/svg?seed=User");
 
       const message = document.createElement("div");
       message.className = "message";
