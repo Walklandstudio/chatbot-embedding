@@ -3,67 +3,126 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Canine Personality Chatbot</title>
+  <title>Coach Scout – Canine Personality Chatbot</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <style>
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f7f7f7;
+      font-family: 'Inter', sans-serif;
+      background: #f0f4f8;
       display: flex;
       flex-direction: column;
+      align-items: center;
+      justify-content: center;
       height: 100vh;
     }
+
+    .chat-box {
+      background: white;
+      width: 100%;
+      max-width: 600px;
+      height: 80vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
     .chat-container {
       flex: 1;
       padding: 20px;
       overflow-y: auto;
+      display: flex;
+      flex-direction: column;
     }
+
     .message {
       margin-bottom: 15px;
-      padding: 10px 15px;
-      border-radius: 10px;
-      max-width: 70%;
+      padding: 12px 16px;
+      border-radius: 12px;
+      max-width: 75%;
+      line-height: 1.5;
     }
+
     .user {
       align-self: flex-end;
       background-color: #d1e7dd;
     }
+
     .bot {
       align-self: flex-start;
       background-color: #fff;
       border: 1px solid #ccc;
     }
+
     .input-area {
       display: flex;
-      padding: 10px;
-      border-top: 1px solid #ccc;
+      padding: 12px;
+      border-top: 1px solid #ddd;
+      background: #fafafa;
     }
+
+    .input-area select,
+    .input-area input,
+    .input-area button {
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+    }
+
+    #profileSelect {
+      margin-right: 10px;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+
     .input-area input {
       flex: 1;
       padding: 10px;
       border: 1px solid #ccc;
-      border-radius: 5px;
+      border-radius: 8px;
     }
+
     .input-area button {
       margin-left: 10px;
       padding: 10px 20px;
       background-color: #007bff;
       color: white;
       border: none;
-      border-radius: 5px;
+      border-radius: 8px;
       cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .input-area button:hover {
+      background-color: #0056b3;
     }
   </style>
 </head>
 <body>
-  <div class="chat-container" id="chat"></div>
-  <div class="input-area">
-    <input type="text" id="userInput" placeholder="Ask me anything about the test..." />
-    <button onclick="sendMessage()">Send</button>
+  <div class="chat-box">
+    <div class="chat-container" id="chat"></div>
+    <div class="input-area">
+      <select id="profileSelect">
+        <option value="General">General</option>
+        <option value="The Guardian">The Guardian</option>
+        <option value="The Investigator">The Investigator</option>
+        <option value="The Socialiser">The Socialiser</option>
+        <option value="The Peacekeeper">The Peacekeeper</option>
+        <option value="The Performer">The Performer</option>
+        <option value="The Achiever">The Achiever</option>
+        <option value="The Connector">The Connector</option>
+        <option value="The Provider">The Provider</option>
+      </select>
+      <input type="text" id="userInput" placeholder="Ask Coach Scout a question..." />
+      <button onclick="sendMessage()">Send</button>
+    </div>
   </div>
 
   <script>
     const chat = document.getElementById("chat");
+    const input = document.getElementById("userInput");
 
     function addMessage(content, sender) {
       const msg = document.createElement("div");
@@ -74,22 +133,37 @@
     }
 
     async function sendMessage() {
-      const input = document.getElementById("userInput");
       const text = input.value.trim();
+      const profile = document.getElementById("profileSelect").value;
       if (!text) return;
 
       addMessage(text, "user");
       input.value = "";
 
-      const response = await fetch("https://chatbot-embedding.onrender.com/chat", {
+      const response = await fetch("/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question: text })
+        body: JSON.stringify({ question: text, profile_name: profile })
       });
 
       const data = await response.json();
-      addMessage(data.answer, "bot");
+      addMessage(data.answer || "Sorry, Coach Scout couldn’t find an answer.", "bot");
     }
+
+    // Enter key triggers "Send"
+    input.addEventListener("keypress", function (e) {
+      if (e.key === "Enter") {
+        sendMessage();
+      }
+    });
+
+    // Bot welcome messages on page load
+    window.addEventListener("DOMContentLoaded", () => {
+      addMessage("Hello, I’m Coach Scout and I’m here to help you understand your Canine personality better.", "bot");
+      setTimeout(() => addMessage("Let’s get started.", "bot"), 1000);
+      setTimeout(() => addMessage("Do you have any questions for me?", "bot"), 2000);
+    });
   </script>
 </body>
 </html>
+
