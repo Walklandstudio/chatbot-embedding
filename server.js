@@ -39,7 +39,7 @@ app.post("/chat", async (req, res) => {
     const queryEmbedding = embed.data[0].embedding;
 
     const { data: matches, error } = await supabase.rpc("match_profile_faqs", {
-  query_embedding: embedding,
+  query_embedding: queryEmbedding,
   match_threshold: 0.78,
   match_count: 5,
   profile_filter: profile_name, // 💡 make sure this is defined above
